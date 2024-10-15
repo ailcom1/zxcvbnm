@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>عداد النقاط</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .points-box {
+            position: absolute;
+            top: 10px;
+            background-color: white;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 20px;
+            color: black;
+            width: auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .circle {
+            width: 220px;
+            height: 220px;
+            background-color: black;
+            border-radius: 50%;
+            border: 10px solid #FFD700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 30px;
+            position: relative; /* لضبط تأثير المطر داخل الدائرة */
+            overflow: hidden; /* للتأكد من عدم خروج المطر من حدود الدائرة */
+        }
+
+        /* تأثير المطر */
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .rain div {
+            position: absolute;
+            bottom: 100%;
+            width: 2px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            animation: fall 1s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(220px);
+            }
+        }
+
+        .countdown-button {
+            background-color: #20C997;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 200px;
+        }
+
+        .countdown-button:hover {
+            background-color: #1E9B87;
+        }
+
+        .countdown-button:active {
+            background-color: #17A085;
+        }
+
+        .news-ticker {
+            width: 100vw;
+            background-color: #20C997;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 0;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-bottom: 20px;
+            border: 2px solid #20C997;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        .news-ticker span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 10s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .input-box {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* زر البروفايل */
+        .profile-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-button img {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- صندوق عرض النقاط -->
+<div class="points-box" id="pointsBox">
+    نقاط متحصلة: <span id="points">800</span>
+</div>
+
+<div class="circle" id="countdownCircle"></div>
+
+<button class="countdown-button" id="countdownButton">تشغيل</button>
+
+<!-- الشريط الإخباري المتحرك -->
+<div class="news-ticker">
+    <span>مرحبًا بك في تطبيق دولار $&  اسحب من تطبيق  @sadhduيوم الخميس فقط ويكون سحب عن طريق تواصل عبر تلكرام</span>
+</div>
+
+<!-- إدخال اسم المستخدم -->
+<div class="input-box" id="usernameInputBox">
+    <input type="text" id="usernameInput" placeholder="أدخل اسم المستخدم الخاص بك" />
+</div>
+
+<!-- زر حفظ اسم المستخدم -->
+<div class="buttons" id="usernameButtons">
+    <button class="countdown-button" id="saveUsernameButton">حفظ اسم المستخدم</button>
+</div>
+
+<!-- زر البروفايل الدائري -->
+<div class="profile-button" id="profileButton">
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile">
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBp6q2iITFblRbXAFmlskdaWqfq8NIRfT4",
+        authDomain: "moayad-carpets.firebaseapp.com",
+        projectId: "moayad-carpets",
+        storageBucket: "moayad-carpets.appspot.com",
+        messagingSenderId: "657387251960",
+        appId: "1:657387251960:web:630b13a902ef303f3f330d",
+        measurementId: "G-2MSVMJPXT0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    let points = 800;
+    let countdownActive = false;
+    let countdownEndTime;
+    let countdownInterval;
+    let savedUsername = localStorage.getItem('username');
+
+    const pointsBox = document.getElementById('points');
+    const countdownButton = document.getElementById('countdownButton');
+    const usernameInputBox = document.getElementById('usernameInputBox');
+    const usernameButtons = document.getElementById('usernameButtons');
+
+    // وظيفة لبدء تأثير المطر
+    function startRain() {
+        const circle = document.getElementById('countdownCircle');
+        circle.innerHTML = ''; // مسح أي عناصر سابقة
+        const rainContainer = document.createElement('div');
+        rainContainer.classList.add('rain');
+        for (let i = 0; i < 100; i++) {
+            const raindrop = document.createElement('div');
+            raindrop.style.left = `${Math.random() * 100}%`;
+            raindrop.style.animationDuration = `${0.5 + Math.random() * 1.5}s`;
+            rainContainer.appendChild(raindrop);
+        }
+        circle.appendChild(rainContainer);
+        // حفظ حالة المطر في LocalStorage
+        localStorage.setItem('rainActive', 'true');
+    }
+
+    // وظيفة لإيقاف المطر (عند الحاجة)
+    function stopRain() {
+        const circle = document.getElementById('countdownCircle');
+        circle.innerHTML = ''; // مسح المطر من الدائرة
+        localStorage.setItem('rainActive', 'false');
+    }
+
+    // عند الضغط على زر التشغيل
+    countdownButton.addEventListener('click', () => {
+        if (!savedUsername) {
+            alert("يرجى إدخال اسم المستخدم أولاً");
+            return;
+        }
+
+        if (countdownActive) return;
+
+        countdownEndTime = new Date().getTime() + 24 * 60 * 60 * 1000; // ضبط الوقت لنهاية العد التنازلي (24 ساعة)
+        countdownActive = true;
+        countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // حفظ وقت انتهاء العد التنازلي في قاعدة البيانات
+        const userRef = ref(database, `users/${savedUsername}`);
+        update(userRef, {
+            countdownEndTime: countdownEndTime
+        }).then(() => {
+            console.log("تم حفظ وقت انتهاء العد التنازلي في قاعدة البيانات.");
+        }).catch((error) => {
+            console.error("Error updating countdown end time:", error);
+        });
+
+        startRain(); // بدء تأثير المطر عند تشغيل العد التنازلي
+    });
+
+    // حساب الوقت المتبقي
+    function calculateTimeLeft(endTime) {
+        const now = new Date().getTime();
+        return endTime - now;
+    }
+
+    // تحديث العد التنازلي
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = countdownEndTime - now;
+
+        if (distance <= 0) {
+            clearInterval(countdownInterval);
+            countdownButton.textContent = "تشغيل";
+            countdownActive = false;
+
+            // إضافة النقاط بعد انتهاء العد التنازلي
+            points += 100;
+            pointsBox.textContent = points;
+
+            // تحديث النقاط في قاعدة البيانات
+            const userRef = ref(database, `users/${savedUsername}`);
+            update(userRef, {
+                points: points
+            }).then(() => {
+                console.log("تم تحديث النقاط بنجاح");
+            }).catch((error) => {
+                console.error("Error updating points:", error);
+            });
+
+            stopRain(); // إيقاف المطر بعد انتهاء العد التنازلي
+            return;
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        countdownButton.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // استرجاع وقت انتهاء العد
+    function checkCountdown() {
+        if (savedUsername) {
+            const userRef = ref(database, `users/${savedUsername}`);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    points = userData.points || 800;
+                    pointsBox.textContent = points;
+
+                    countdownEndTime = userData.countdownEndTime;
+                    if (countdownEndTime) {
+                        const timeLeft = calculateTimeLeft(countdownEndTime);
+
+                        if (timeLeft > 0) {
+                            countdownActive = true;
+                            countdownInterval = setInterval(updateCountdown, 1000);
+                            updateCountdown(); // تحديث أولي عند التحميل
+                            startRain(); // استمرار تأثير المطر مع العد التنازلي
+                        } else {
+                            countdownButton.textContent = "تشغيل";
+                        }
+                    }
+                    hideUsernameInput();
+                } else {
+                    console.error("User data not found.");
+                }
+            }).catch((error) => {
+                console.error("Error fetching user data:", error);
+            });
+        }
+    }
+
+    // إخفاء مدخل اسم المستخدم وزر الحفظ
+    function hideUsernameInput() {
+        usernameInputBox.classList.add('hidden');
+        usernameButtons.classList.add('hidden');
+    }
+
+    // إظهار مدخل اسم المستخدم وزر الحفظ
+    function showUsernameInput() {
+        usernameInputBox.classList.remove('hidden');
+        usernameButtons.classList.remove('hidden');
+    }
+
+    // حفظ اسم المستخدم ورمز الإحالة في قاعدة البيانات
+    const saveUsernameButton = document.getElementById('saveUsernameButton');
+    saveUsernameButton.addEventListener('click', () => {
+        const username = document.getElementById('usernameInput').value.trim();
+        if (username) {
+            localStorage.setItem('username', username);
+            savedUsername = username;
+            saveUserInDatabase(username);
+            hideUsernameInput(); // إخفاء المدخل بعد الحفظ
+            checkCountdown();
+        } else {
+            alert("يرجى إدخال اسم المستخدم");
+        }
+    });
+
+    // حفظ بيانات المستخدم الجديدة في قاعدة البيانات
+    function saveUserInDatabase(username) {
+        const userRef = ref(database, `users/${username}`);
+        const referralCode = generateReferralCode(); // رمز إحالة عشوائي
+
+        const dataToSave = {
+            points: points,
+            referralCode: referralCode
+        };
+
+        // تحقق مما إذا كان countdownEndTime معرفًا أم لا
+        if (countdownEndTime) {
+            dataToSave.countdownEndTime = countdownEndTime;
+        }
+
+        set(userRef, dataToSave)
+            .then(() => {
+                console.log("تم حفظ المستخدم الجديد في قاعدة البيانات.");
+            })
+            .catch((error) => {
+                console.error("Error saving user:", error);
+            });
+    }
+
+    // استرجاع حالة العد التنازلي عند تحميل الصفحة
+    checkCountdown();
+
+    // التنقل إلى صفحة البروفايل عند الضغط على زر البروفايل
+    const profileButton = document.getElementById('profileButton');
+    profileButton.addEventListener('click', () => {
+        window.location.href = "profile.html"; // ينقلك إلى صفحة البروفايل
+    });
+
+    // دالة لتوليد رمز إحالة عشوائي
+    function generateReferralCode() {
+        let referralCode = '';
+        for (let i = 0; i < 11; i++) {
+            referralCode += Math.floor(Math.random() * 10); // توليد رقم عشوائي بين 0 و 9
+        }
+        return referralCode;
+    }
+</script>
+
+</body>
+</html>

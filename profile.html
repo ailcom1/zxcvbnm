@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>صفحة البروفايل</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* خلفية مريحة بلون أزرق فاتح */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            padding: 0;
+            box-sizing: border-box;
+            direction: rtl; /* جعل النصوص في الاتجاه من اليمين لليسار */
+        }
+
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e6f7ff; /* لون خلفية مريح للعين (أزرق فاتح جداً) */
+            border: 2px solid #90EE90; /* لون أخضر فاتح */
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #90EE90; /* لون أخضر فاتح */
+            margin-bottom: 10px;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .upload-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #20c997;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-info {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #90EE90; /* لون أخضر فاتح */
+            border-radius: 15px;
+            text-align: right; /* محاذاة النص إلى اليمين */
+            font-size: 18px;
+            background-color: #f5fff5; /* خلفية خضراء فاتحة */
+        }
+
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .back-button:hover {
+            background-color: #0069d9;
+        }
+
+        .back-button:active {
+            background-color: #0056b3;
+        }
+
+        input[type="file"] {
+            display: none; /* إخفاء زر تحميل الملف الافتراضي */
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <div class="profile-image" id="profileImage">
+        <!-- الصورة ستظهر هنا بعد التحميل -->
+    </div>
+    
+    <!-- زر تحميل الصورة -->
+    <label for="fileInput" class="upload-button">تحميل صورة</label>
+    <input type="file" id="fileInput" accept="image/*">
+    
+    <div class="profile-info">اسم المستخدم: <span id="username">undefined</span></div>
+    <div class="profile-info">رمز الإحالة: <span id="referralCode">undefined</span></div>
+    <div class="profile-info">البريد الإلكتروني: <span id="email">غير متاح</span></div>
+
+    <button class="back-button" onclick="window.location.href='index.html'">العودة إلى العداد</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBp6q2iITFblRbXAFmlskdaWqfq8NIRfT4",
+        authDomain: "moayad-carpets.firebaseapp.com",
+        projectId: "moayad-carpets",
+        storageBucket: "moayad-carpets.appspot.com",
+        messagingSenderId: "657387251960",
+        appId: "1:657387251960:web:630b13a902ef303f3f330d",
+        measurementId: "G-2MSVMJPXT0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const username = localStorage.getItem('username');
+
+    if (username) {
+        const userRef = ref(database, `users/${username}`);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                document.getElementById('username').textContent = username;
+                document.getElementById('referralCode').textContent = snapshot.val().referralCode || 'غير متاح';
+            } else {
+                console.error("User data not found");
+            }
+        }).catch((error) => {
+            console.error("Error fetching user data:", error);
+        });
+    }
+
+    // تحميل الصورة وعرضها داخل الدائرة، مع تخزين الصورة في LocalStorage
+    const fileInput = document.getElementById('fileInput');
+    const profileImage = document.getElementById('profileImage');
+
+    // استرجاع الصورة المخزنة في LocalStorage عند تحميل الصفحة
+    const storedImage = localStorage.getItem('profileImage');
+    if (storedImage) {
+        profileImage.style.backgroundImage = `url("${storedImage}")`;
+    }
+
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageDataUrl = e.target.result;
+                profileImage.style.backgroundImage = `url("${imageDataUrl}")`;
+                localStorage.setItem('profileImage', imageDataUrl); // حفظ الصورة في LocalStorage
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+
+</body>
+</html>
