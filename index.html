@@ -45,8 +45,8 @@
             align-items: center;
             color: white;
             font-size: 30px;
-            position: relative; /* لضبط تأثير المطر داخل الدائرة */
-            overflow: hidden; /* للتأكد من عدم خروج المطر من حدود الدائرة */
+            position: relative;
+            overflow: hidden;
         }
 
         /* تأثير المطر */
@@ -185,7 +185,7 @@
 
 <!-- صندوق عرض النقاط -->
 <div class="points-box" id="pointsBox">
-    نقاط متحصلة: <span id="points">800</span>
+    نقاط متحصلة: <span id="points">900</span>
 </div>
 
 <div class="circle" id="countdownCircle"></div>
@@ -194,7 +194,7 @@
 
 <!-- الشريط الإخباري المتحرك -->
 <div class="news-ticker">
-    <span>مرحبًا بك في تطبيق دولار $&  اسحب من تطبيق  @sadhduيوم الخميس فقط ويكون سحب عن طريق تواصل عبر تلكرام</span>
+    <span>مرحبًا بك في تطبيق دولار $&  اسحب من تطبيق  @sadhdu يوم الخميس فقط ويكون سحب عن طريق تواصل عبر تلكرام</span>
 </div>
 
 <!-- إدخال اسم المستخدم -->
@@ -229,7 +229,7 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    let points = 800;
+    let points = 900; // النقاط الابتدائية
     let countdownActive = false;
     let countdownEndTime;
     let countdownInterval;
@@ -253,9 +253,22 @@
             rainContainer.appendChild(raindrop);
         }
         circle.appendChild(rainContainer);
-        // حفظ حالة المطر في LocalStorage
         localStorage.setItem('rainActive', 'true');
     }
+
+    // تتبع اتجاه سقوط المطر باستخدام الجيروسكوب
+    window.addEventListener('deviceorientation', (event) => {
+        const rainDrops = document.querySelectorAll('.rain div');
+        const gamma = event.gamma; // الميل حول المحور X (الجهاز يميل لليمين أو اليسار)
+        const beta = event.beta;  // الميل حول المحور Y (الجهاز يميل للأمام أو الخلف)
+
+        // تحويل ميل الجهاز إلى حركة المطر
+        rainDrops.forEach((raindrop) => {
+            const offsetX = gamma / 90 * 50; // حساب الإزاحة الأفقية
+            const offsetY = beta / 90 * 50; // حساب الإزاحة الرأسية
+            raindrop.style.transform = `translate(${offsetX}px, ${offsetY}px)`; // تغيير اتجاه سقوط المطر بناءً على إمالة الجهاز
+        });
+    });
 
     // وظيفة لإيقاف المطر (عند الحاجة)
     function stopRain() {
@@ -308,7 +321,7 @@
             countdownActive = false;
 
             // إضافة النقاط بعد انتهاء العد التنازلي
-            points += 100;
+            points += 100; // تضاف 100 نقطة
             pointsBox.textContent = points;
 
             // تحديث النقاط في قاعدة البيانات
@@ -339,7 +352,7 @@
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
-                    points = userData.points || 800;
+                    points = userData.points || 900; // ضبط النقاط الابتدائية إلى 900
                     pointsBox.textContent = points;
 
                     countdownEndTime = userData.countdownEndTime;
@@ -402,7 +415,6 @@
             referralCode: referralCode
         };
 
-        // تحقق مما إذا كان countdownEndTime معرفًا أم لا
         if (countdownEndTime) {
             dataToSave.countdownEndTime = countdownEndTime;
         }
